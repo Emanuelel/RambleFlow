@@ -80,4 +80,4 @@ RambleFlow source is licensed under [GPL-3.0-only](LICENSE). See the [third-part
 - [NVIDIA Parakeet](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2) supplies the speech recognition model. The bundled runtime uses the [MLX Community conversion](https://huggingface.co/mlx-community/parakeet-tdt-0.6b-v2).
 - [Tether’s QVAC SDK](https://github.com/tetherto/qvac) runs local transcript cleanup and powers speech recognition in the source build.
 - [Qwen](https://huggingface.co/Qwen/Qwen3-1.7B) supplies the base model for our cleanup refiner. We started from [Unsloth’s GGUF conversion](https://huggingface.co/unsloth/Qwen3-1.7B-GGUF).
-- [OpenWhispr](https://github.com/OpenWhispr/openwhispr) inspired the structure of this README.
+
