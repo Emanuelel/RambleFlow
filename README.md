@@ -8,7 +8,18 @@ The Homebrew cask is pending. The [release checklist](RELEASE.md) describes the 
 
 ## Build from source
 
-You need an Apple silicon Mac running macOS 14 or later, Apple's command-line developer tools, Python 3, npm, and a Node version supported by [package.json](package.json). You also need compatible GGUF refiner weights. The app uses a chat-style cleanup prompt and supports an optional LoRA adapter trained against the same base weights.
+The source build targets Apple silicon (arm64) and macOS 14 or later. The current release candidate was checked on an M1 Pro running macOS 26.5.1. The deployment target is macOS 14. Compatibility testing on macOS 14 is pending. Intel Macs are outside the build target.
+
+Install the Apple command-line developer tools, Python 3, and Node.js with npm. The supported Node ranges are 22.23 or later in the 22.x series, or 24.9 or later. If the Apple tools are missing, run `xcode-select --install`.
+
+Clone the repository and enter the checkout before running the build commands below.
+
+```sh
+git clone https://github.com/Emanuelel/RambleFlow.git
+cd RambleFlow
+```
+
+Use compatible GGUF refiner weights. The app uses a chat-style cleanup prompt and supports an optional LoRA adapter trained against the same base weights.
 
 For a starter model, use [Qwen3-1.7B-Q4_0.gguf](https://huggingface.co/unsloth/Qwen3-1.7B-GGUF/blob/d7f544eead698dbd1f15126ef60b45a1e1933222/Qwen3-1.7B-Q4_0.gguf), the GGUF pinned by the QVAC SDK catalog. Model weights are downloaded separately.
 
