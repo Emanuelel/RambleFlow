@@ -2,7 +2,7 @@
 
 **Local voice typing for macOS.** Hold Fn, speak, and release to turn your words into text at the cursor. RambleFlow runs speech recognition and transcript cleanup on your Mac.
 
-[Install](#install) · [Features](#features) · [Quick start](#quick-start) · [Changelog](CHANGELOG.md)
+[Install](#install) · [Features](#features) · [The recipe](#the-recipe) · [Quick start](#quick-start) · [Changelog](CHANGELOG.md)
 
 ## Install
 
@@ -18,6 +18,13 @@ See the [release checklist](RELEASE.md) for the planned installer and its runtim
 - **Clean up transcripts locally.** Parakeet recognizes speech, and QVAC runs the cleanup model on your Mac.
 - **Save custom vocabulary.** Add names and terms you use often. The optional fast recognizer can use them during transcription.
 - **Open from the Dock or menu bar.** Click the app icon to reopen the main window, or use the waveform in the menu bar.
+
+## The recipe
+
+1. **Hear.** NVIDIA Parakeet turns microphone audio into text on your Mac. The source build uses QVAC for recognition. The optional fast setup uses the local Phonon sidecar.
+2. **Clean up.** QVAC runs a local language model to fix punctuation and remove false starts while preserving what you meant. The planned fast installer pairs it with Broad1291 + Literal192, our fine-tuned Qwen3 1.7B refiner. The source build uses the compatible GGUF you supply.
+3. **Work ahead.** In the fast setup, recognition and cleanup can start before you release the shortcut. When the final transcript matches the preview or only needs a supported punctuation update, RambleFlow can reuse the work.
+4. **Insert.** With Accessibility permission, RambleFlow can put the result into the focused text field. The Scratchpad lets you try the same workflow inside the app.
 
 ## Quick start
 
