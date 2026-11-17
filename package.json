@@ -1,0 +1,20 @@
+{
+  "name": "rambleflow",
+  "version": "0.1.0",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "description": "Local dictation for macOS using QVAC",
+  "engines": {
+    "node": "^22.23.0 || >=24.9.0"
+  },
+  "dependencies": {
+    "@qvac/sdk": "0.23.0"
+  },
+  "scripts": {
+    "test": "sh app/verify.sh"
+  },
+  "overrides": {
+    "zod": "4.6.6"
+  }
+}

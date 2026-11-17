@@ -1,0 +1,13 @@
+cask "rambleflow" do
+  version "@VERSION@"
+  sha256 "@SHA256@"
+
+  url "@URL@"
+  name "RambleFlow"
+  desc "Local voice typing for macOS"
+  homepage "https://github.com/Emanuelel/qvac-dictation"
+
+  depends_on arch: :arm64
+  app "RambleFlow.app"
+  artifact "timed-runtime", target: "#{Dir.home}/Library/Application Support/RambleFlow/timed-runtime"
+end
