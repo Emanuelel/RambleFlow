@@ -18,14 +18,14 @@ See the [release checklist](RELEASE.md) for the planned installer and its runtim
 
 - **Dictate into other apps.** Use the global shortcut to insert text into the focused field, or try dictation in the built-in Scratchpad.
 - **Clean up transcripts locally.** Parakeet recognizes speech, and QVAC runs the cleanup model on your Mac.
-- **Save custom vocabulary.** Add names and terms you use often. The optional fast recognizer can use them during transcription.
+- **Save custom vocabulary.** Add names and terms you use often. The bundled fast recognizer uses them during transcription.
 - **Open from the Dock or menu bar.** Click the app icon to reopen the main window, or use the waveform in the menu bar.
 
 ## The recipe
 
-1. **Hear.** NVIDIA Parakeet turns microphone audio into text on your Mac. The source build uses QVAC for recognition. The optional fast setup uses the local Phonon sidecar.
-2. **Clean up.** QVAC runs a local language model to fix punctuation and remove false starts while preserving what you meant. The planned fast installer pairs it with Broad1291 + Literal192, our fine-tuned Qwen3 1.7B refiner. The source build uses the compatible GGUF you supply.
-3. **Work ahead.** In the fast setup, recognition and cleanup can start before you release the shortcut. When the final transcript matches the preview or only needs a supported punctuation update, RambleFlow can reuse the work.
+1. **Hear.** NVIDIA Parakeet turns microphone audio into text on your Mac. The standard installer bundles the local Phonon sidecar and uses it for recognition by default. The source build described below uses QVAC for recognition.
+2. **Clean up.** QVAC runs a local language model to fix punctuation and remove false starts while preserving what you meant. The standard installer pairs it with Broad1291 + Literal192, our fine-tuned Qwen3 1.7B refiner. The source build uses the compatible GGUF you supply.
+3. **Work ahead.** With the bundled fast runtime, recognition and cleanup can start before you release the shortcut. When the final transcript matches the preview or only needs a supported punctuation update, RambleFlow can reuse the work.
 4. **Insert.** With Accessibility permission, RambleFlow can put the result into the focused text field. The Scratchpad lets you try the same workflow inside the app.
 
 ## Quick start
@@ -72,4 +72,4 @@ Run `npm test` before submitting changes. For dictation issues, include the macO
 
 ## License and credits
 
-RambleFlow source is licensed under [GPL-3.0-only](LICENSE). The optional fast speech path uses the local ASR sidecar from Phonon by Infatoshi. See the [third-party notices](THIRD_PARTY_NOTICES.md) for credits and licenses.
+RambleFlow source is licensed under [GPL-3.0-only](LICENSE). The standard installer uses the local ASR sidecar from Phonon by Infatoshi. See the [third-party notices](THIRD_PARTY_NOTICES.md) for credits and licenses.
