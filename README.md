@@ -1,10 +1,30 @@
-# RambleFlow
+<p align="center">
+  <img src="assets/readme-logo.png" width="150" height="150" alt="RambleFlow app icon">
+</p>
 
-![RambleFlow app icon and wordmark](assets/readme-banner.png)
+<h1 align="center">RambleFlow</h1>
 
-**Local voice typing for macOS.** Hold Fn, speak, and release to turn your words into text at the cursor. RambleFlow runs speech recognition and transcript cleanup on your Mac.
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL%203.0--only-2ea44f" alt="License: GPL 3.0 only"></a>
+  <a href="#install"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Apple%20silicon-lightgrey" alt="Platform: macOS on Apple silicon"></a>
+  <a href="RELEASE.md"><img src="https://img.shields.io/badge/installer-pending-blue" alt="Installer: pending"></a>
+</p>
 
-[Install](#install) · [Features](#features) · [The recipe](#the-recipe) · [Quick start](#quick-start) · [Changelog](CHANGELOG.md)
+<p align="center">
+  <strong>Local voice typing for macOS.</strong><br>
+  Hold Fn, speak, and release to turn your words into text at the cursor.<br>
+  Speech recognition and transcript cleanup run on your Mac.
+</p>
+
+<p align="center">
+  <a href="#install">Install</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#the-recipe">The recipe</a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
+
+---
 
 ## Install
 
