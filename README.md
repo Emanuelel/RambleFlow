@@ -1,5 +1,7 @@
 # RambleFlow
 
+![RambleFlow app icon and wordmark](assets/readme-banner.png)
+
 **Local voice typing for macOS.** Hold Fn, speak, and release to turn your words into text at the cursor. RambleFlow runs speech recognition and transcript cleanup on your Mac.
 
 [Install](#install) · [Features](#features) · [The recipe](#the-recipe) · [Quick start](#quick-start) · [Changelog](CHANGELOG.md)
