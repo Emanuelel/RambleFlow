@@ -414,7 +414,7 @@ final class DictationApp: NSObject, NSApplicationDelegate {
     private var config: [String: Any] = [:]
     init(_ launch: LaunchConfig) { self.launch = launch }
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        NSApp.setActivationPolicy(.regular)
         makePanel(); makeMenu(); loadSettings(); registerShortcuts(); makePill(); startWorker()
         if !UserDefaults.standard.bool(forKey: "onboarded") && !CommandLine.arguments.contains("--ui-smoke") { makeOnboarding() }
         Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in self?.refreshChrome() }
@@ -431,6 +431,12 @@ final class DictationApp: NSObject, NSApplicationDelegate {
             Timer.scheduledTimer(withTimeInterval: 150, repeats: false) { _ in fputs("UI smoke timed out.\n", stderr); NSApp.terminate(nil) }
         }
     }
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if panel.isMiniaturized { panel.deminiaturize(nil) }
+        panel.makeKeyAndOrderFront(nil)
+        return false
+    }
+
     private func makePanel() {
         panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: DictationApp.windowWidth, height: 640), styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.title = "RambleFlow"; panel.titleVisibility = .hidden; panel.titlebarAppearsTransparent = true

@@ -111,10 +111,11 @@ if args.bundle:
     (runtime / 'app/default-refiner.json').write_text(json.dumps(manifest, indent=2) + '\n')
     (runtime / 'package.json').write_text(json.dumps({'private': True, 'type': 'module'}) + '\n')
     shutil.copytree(cache / 'node_modules', runtime / 'node_modules', symlinks=True)
+shutil.copy2(ROOT / 'app/RambleFlow.icns', resources / 'RambleFlow.icns')
 info = {'CFBundleExecutable': 'RambleFlow', 'CFBundleIdentifier': 'io.rambleflow.app',
         'CFBundleName': 'RambleFlow', 'CFBundleDisplayName': 'RambleFlow',
         'CFBundleVersion': '1', 'CFBundleShortVersionString': '0.1.0', 'CFBundlePackageType': 'APPL',
-        'LSMinimumSystemVersion': '14.0', 'LSUIElement': True,
+        'LSMinimumSystemVersion': '14.0', 'CFBundleIconFile': 'RambleFlow.icns',
         'NSMicrophoneUsageDescription': 'Record dictation while you hold the shortcut. Speech is processed locally with QVAC.'}
 with (bundle / 'Contents/Info.plist').open('wb') as stream:
     plistlib.dump(info, stream)
