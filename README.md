@@ -70,6 +70,14 @@ Use a standalone Node distribution and a fresh output directory for each bundle.
 
 Run `npm test` before submitting changes. For dictation issues, include the macOS version, model, and steps to reproduce. Use synthetic examples when reporting issues involving audio or transcripts.
 
-## License and credits
+## License
 
-RambleFlow source is licensed under [GPL-3.0-only](LICENSE). The standard installer uses the local ASR sidecar from Phonon by Infatoshi. See the [third-party notices](THIRD_PARTY_NOTICES.md) for credits and licenses.
+RambleFlow source is licensed under [GPL-3.0-only](LICENSE). See the [third-party notices](THIRD_PARTY_NOTICES.md) for component licenses and pinned versions.
+
+## Acknowledgments
+
+- [Phonon by Infatoshi](https://github.com/Infatoshi/phonon) supplies the local speech recognition sidecar bundled in the standard installer and inspired the dictation pipeline.
+- [NVIDIA Parakeet](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2) supplies the speech recognition model. The bundled runtime uses the [MLX Community conversion](https://huggingface.co/mlx-community/parakeet-tdt-0.6b-v2).
+- [Tether’s QVAC SDK](https://github.com/tetherto/qvac) runs local transcript cleanup and powers speech recognition in the source build.
+- [Qwen](https://huggingface.co/Qwen/Qwen3-1.7B) supplies the base model for our cleanup refiner. We started from [Unsloth’s GGUF conversion](https://huggingface.co/unsloth/Qwen3-1.7B-GGUF).
+- [OpenWhispr](https://github.com/OpenWhispr/openwhispr) inspired the structure of this README.
