@@ -1,14 +1,27 @@
 # RambleFlow
 
-RambleFlow is a native macOS dictation app. RambleFlow runs speech recognition and transcript cleanup locally, with QVAC handling cleanup. Hold Fn to dictate, then release to finish. Use the Scratchpad to try it inside RambleFlow.
+**Local voice typing for macOS.** Hold Fn, speak, and release to turn your words into text at the cursor. RambleFlow runs speech recognition and transcript cleanup on your Mac.
+
+[Install](#install) · [Features](#features) · [Quick start](#quick-start) · [Changelog](CHANGELOG.md)
 
 ## Install
 
-The Homebrew cask is pending. The [release checklist](RELEASE.md) describes the runtime the cask will install and the checks required before it can ship.
+| Platform | Availability |
+| --- | --- |
+| macOS on Apple silicon | [Build from source](#quick-start). The disk image and Homebrew cask are pending. |
 
-## Build from source
+See the [release checklist](RELEASE.md) for the planned installer and its runtime.
 
-The source build targets Apple silicon (arm64) and macOS 14 or later. The current release candidate was checked on an M1 Pro running macOS 26.5.1. The deployment target is macOS 14. Compatibility testing on macOS 14 is pending. Intel Macs are outside the build target.
+## Features
+
+- **Dictate into other apps.** Use the global shortcut to insert text into the focused field, or try dictation in the built-in Scratchpad.
+- **Clean up transcripts locally.** Parakeet recognizes speech, and QVAC runs the cleanup model on your Mac.
+- **Save custom vocabulary.** Add names and terms you use often. The optional fast recognizer can use them during transcription.
+- **Open from the Dock or menu bar.** Click the app icon to reopen the main window, or use the waveform in the menu bar.
+
+## Quick start
+
+The source build targets Apple silicon (arm64) and macOS 14 or later. An earlier release candidate was checked on an M1 Pro running macOS 26.5.1. The deployment target is macOS 14. Compatibility testing on macOS 14 is pending. Intel Macs are outside the build target.
 
 Install the Apple command-line developer tools, Python 3, and Node.js with npm. The supported Node ranges are 22.23 or later in the 22.x series, or 24.9 or later. If the Apple tools are missing, run `xcode-select --install`.
 
@@ -32,6 +45,8 @@ open .local/app/RambleFlow.app
 
 This build uses the QVAC speech recognizer and the refiner you supply. On first launch, it downloads the QVAC Parakeet speech model. Allow microphone access to dictate and Accessibility access to use the global shortcut and insert text into other apps. The development build points to this checkout. It preserves the selected model across rebuilds. To change weights, run `node app/select-model.mjs .local/app/config.json /absolute/path/to/refiner.gguf` and choose Reload models in the app. This resets automatic insertion to preview mode. For a new configuration with an adapter, build into a fresh `--output` directory under `.local/`.
 
+## Privacy
+
 Normal dictation processes audio and text locally. The app keeps usage counts on disk and holds the last result in memory for quick paste. Developer replay tracing, when explicitly enabled, can write raw audio and transcripts to disk.
 
 ## Package a standalone build
@@ -45,5 +60,7 @@ Use a standalone Node distribution and a fresh output directory for each bundle.
 ## Contributing
 
 Run `npm test` before submitting changes. For dictation issues, include the macOS version, model, and steps to reproduce. Use synthetic examples when reporting issues involving audio or transcripts.
+
+## License and credits
 
 RambleFlow source is licensed under [GPL-3.0-only](LICENSE). The optional fast speech path uses the local ASR sidecar from Phonon by Infatoshi. See the [third-party notices](THIRD_PARTY_NOTICES.md) for credits and licenses.
