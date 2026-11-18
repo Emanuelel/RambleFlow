@@ -22,7 +22,7 @@ runpy.run_path(server, run_name="__main__")
 export function timedAsr(python, server, model, onPreview) {
   const child = spawn(python, ['-c', launchSidecar, server, '--model', model], {
     stdio: ['pipe', 'pipe', 'ignore'],
-    env: { ...process.env, HF_HUB_OFFLINE: '1' },
+    env: { ...process.env, HF_HUB_OFFLINE: '1', PYTHONDONTWRITEBYTECODE: '1' },
   });
   let pending;
   let lastTerms = "[]";

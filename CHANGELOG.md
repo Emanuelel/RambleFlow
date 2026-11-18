@@ -1,5 +1,7 @@
 # Changelog
 
+Disable sidecar Python bytecode writes so vocabulary imports preserve the signed helper bundle.
+
 Recover the identical bundled cleanup model when a saved model path disappears during a runtime upgrade.
 
 RambleFlow now shows its app icon in the Dock. Clicking it brings the main window back.
