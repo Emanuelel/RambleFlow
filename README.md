@@ -7,7 +7,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL%203.0--only-2ea44f" alt="License: GPL 3.0 only"></a>
   <a href="#install"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Apple%20silicon-lightgrey" alt="Platform: macOS on Apple silicon"></a>
-  <a href="RELEASE.md"><img src="https://img.shields.io/badge/installer-pending-blue" alt="Installer: pending"></a>
+  <a href="https://github.com/Emanuelel/RambleFlow/releases/latest"><img src="https://img.shields.io/github/v/release/Emanuelel/RambleFlow" alt="Latest release"></a>
 </p>
 
 <p align="center">
@@ -28,9 +28,13 @@
 
 ## Install
 
-| Platform | Availability |
-| --- | --- |
-| macOS on Apple silicon | [Build from source](#quick-start). The disk image and Homebrew cask are pending. |
+Install with [Homebrew](https://brew.sh) on an Apple silicon Mac running macOS 14 or later:
+
+```sh
+brew install --cask emanuelel/rambleflow/rambleflow
+```
+
+The installer is about 450 MB. On first launch RambleFlow downloads about 4.4 GB of speech and cleanup models and checks each file against a pinned SHA-256. After that, dictation runs offline. The notarized disk image is also on the [releases page](https://github.com/Emanuelel/RambleFlow/releases/latest), and you can [build from source](#quick-start).
 
 See the [release checklist](RELEASE.md) for the planned installer and its runtime.
 
@@ -44,7 +48,7 @@ See the [release checklist](RELEASE.md) for the planned installer and its runtim
 ## The recipe
 
 1. **Hear.** NVIDIA Parakeet turns microphone audio into text on your Mac. The standard installer bundles the local Phonon sidecar and uses it for recognition by default. The source build described below uses QVAC for recognition.
-2. **Clean up.** QVAC runs a local language model to fix punctuation and remove false starts while preserving what you meant. The standard installer pairs it with Broad1291 + Literal192, our fine-tuned Qwen3 1.7B refiner. The source build uses the compatible GGUF you supply.
+2. **Clean up.** QVAC runs a local language model to fix punctuation and remove false starts while preserving what you meant. The standard installer pairs it with Broad1291 + Literal192, our fine-tuned Qwen3 1.7B refiner, described in its [model card](MODEL_CARD.md). The source build uses the compatible GGUF you supply.
 3. **Work ahead.** With the bundled fast runtime, recognition and cleanup can start before you release the shortcut. When the final transcript matches the preview or only needs a supported punctuation update, RambleFlow can reuse the work.
 4. **Insert.** With Accessibility permission, RambleFlow can put the result into the focused text field. The Scratchpad lets you try the same workflow inside the app.
 
