@@ -4,7 +4,7 @@ The text cleanup model RambleFlow runs after speech recognition. It turns a raw 
 
 | | |
 | --- | --- |
-| File | `literal192-q4.gguf`, attached to the [v0.1.0 release](https://github.com/Emanuelel/RambleFlow/releases/tag/v0.1.0) |
+| File | `literal192-q4.gguf`, attached to the [v0.1.0 release](https://github.com/Emanuelel/RambleFlow/releases/tag/v0.1.0) and on [Hugging Face](https://huggingface.co/0xemanuelel/rambleflow-cleanup-1.7b-gguf) |
 | SHA-256 | `5f04f1d6366d58cd42f6da32832f64735c5cba3f04205adca22d573221f135c3` |
 | Size | 1,054,423,616 bytes |
 | Base model | [Qwen3-1.7B](https://huggingface.co/Qwen/Qwen3-1.7B), via [Unsloth's GGUF conversion](https://huggingface.co/unsloth/Qwen3-1.7B-GGUF/tree/d7f544eead698dbd1f15126ef60b45a1e1933222) |
