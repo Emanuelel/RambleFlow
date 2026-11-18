@@ -24,7 +24,7 @@ Two LoRA training runs, each rank 16, alpha 32, one epoch, peak learning rate 1e
 1. **Broad1291**, 1,291 conversations: 336 control examples kept from earlier runs, 803 reviewed synthetic dictation situations, 128 longer messages curated from the public [Sotto transcript cleanup dataset](https://huggingface.co/datasets/juanquivilla/sotto-transcript-cleanup/tree/183cc8fd58532f13fa192980185214de1bcd5acc) (MIT), and 24 authored examples where clean input must stay unchanged. This adapter was merged into the base weights.
 2. **Literal192**, 192 conversations on top of that: synthetic examples focused on keeping exact details (names, numbers, corrections, negations) while cleaning. This adapter was merged too, and the result was quantized to 4 bits.
 
-**Training data:** synthetic text written for this project, reviewed before use, plus the public Sotto examples. No user recordings or user transcripts were used.
+**Training data:** synthetic text written for this project and reviewed before use, the public Sotto examples, and some of the author's own English dictation, recorded with an Italian accent. RambleFlow never collects its users' recordings or transcripts: dictation stays on the Mac.
 
 **Attribution:** some of the earlier control examples may derive from [phonon-synthetic-tts](https://huggingface.co/datasets/Infatoshi/phonon-synthetic-tts/tree/6be46a8affae311b09d052157596b2db7a4488ec) by Elliot Arledge (Infatoshi), whose labels and metadata are licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); they were transformed into chat training pairs. The Sotto examples are by juanquivilla under the MIT license.
 
