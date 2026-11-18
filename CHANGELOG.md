@@ -1,5 +1,7 @@
 # Changelog
 
+Recover the identical bundled cleanup model when a saved model path disappears during a runtime upgrade.
+
 RambleFlow now shows its app icon in the Dock. Clicking it brings the main window back.
 
 Improved saved vocabulary recognition in the fast Parakeet runtime by adjusting how it completes dictionary terms.

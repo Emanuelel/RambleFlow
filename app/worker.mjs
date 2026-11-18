@@ -1,4 +1,4 @@
-import { appendFile, readFile, mkdir, writeFile } from 'node:fs/promises';
+import { access, appendFile, readFile, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline';
@@ -421,6 +421,25 @@ async function handle(message) {
 }
 try {
   config = JSON.parse(await readFile(configPath, 'utf8'));
+  // An older installer stored the bundled refiner in the replaceable speech runtime.
+  // Recover its identical bundled weights when that legacy path disappears on upgrade.
+  if (config.modelPath && !config.adapterPath) {
+    try {
+      await access(config.modelPath);
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      let manifest;
+      try {
+        manifest = JSON.parse(await readFile(new URL('./default-refiner.json', import.meta.url), 'utf8'));
+      } catch (manifestError) {
+        if (manifestError.code !== 'ENOENT') throw manifestError;
+      }
+      if (manifest?.base.sha256 === config.modelSha256) {
+        delete config.modelPath;
+        delete config.modelSha256;
+      }
+    }
+  }
   if (!config.modelPath && !config.adapterPath) {
     const manifest = JSON.parse(await readFile(new URL('./default-refiner.json', import.meta.url), 'utf8'));
     const models = new URL('../models/', import.meta.url);
