@@ -434,7 +434,7 @@ try {
       } catch (manifestError) {
         if (manifestError.code !== 'ENOENT') throw manifestError;
       }
-      if (manifest?.base.sha256 === config.modelSha256) {
+      if (manifest && !manifest.adapter && manifest.base.sha256 === config.modelSha256) {
         delete config.modelPath;
         delete config.modelSha256;
       }
