@@ -1,10 +1,11 @@
-import { access, appendFile, readFile, mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { access, appendFile, readFile, mkdir, stat, writeFile } from 'node:fs/promises';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline';
 import { execFileSync } from 'node:child_process';
 import { validateConfig, vocabularyTerms, modes, outputGuard, rawResult, joinRecognitionSegments } from './core.mjs';
 import { timedAsr } from './timed-asr.mjs';
+import { timedSpeechModel, missingFiles, removeDamaged, downloadFiles } from './model-download.mjs';
 import { buildHistory } from '../scripts/refiner-common.mjs';
 
 // stdout is reserved for private, local JSON messages to the native shell.
@@ -440,26 +441,82 @@ try {
       }
     }
   }
+  // Settings that need no model files are checked before any download, so a bad one fails at once.
+  if (config.version !== 1) throw new Error('Config version must be 1.');
+  vocabularyTerms(config.vocabulary);
+  if (typeof config.cacheDirectory !== 'string' || !isAbsolute(config.cacheDirectory)) throw new Error('cacheDirectory must be an absolute path.');
+  // Each download the first launch needs. The app shows every model as a row of its progress card.
+  const downloads = [];
   if (!config.modelPath && !config.adapterPath) {
     const manifest = JSON.parse(await readFile(new URL('./default-refiner.json', import.meta.url), 'utf8'));
     const models = new URL('../models/', import.meta.url);
     config.modelPath = fileURLToPath(new URL(manifest.base.file, models));
     config.modelSha256 = manifest.base.sha256;
+    if (manifest.base.url) {
+      // A release build leaves the refiner out of the app to keep the installer small. It downloads once.
+      const directory = resolve(config.cacheDirectory, 'refiner');
+      const file = { name: manifest.base.file, size: manifest.base.bytes, sha256: manifest.base.sha256, url: manifest.base.url };
+      config.modelPath = join(directory, file.name);
+      // Its hash is checked on every launch anyway, so a damaged copy is replaced rather than refused forever.
+      await removeDamaged(directory, [file]);
+      const missing = await missingFiles(directory, [file]);
+      if (missing.length) downloads.push({ key: 'cleanup', directory, files: missing });
+    }
     if (manifest.adapter) {
       config.adapterPath = fileURLToPath(new URL(manifest.adapter.file, models));
       config.adapterSha256 = manifest.adapter.sha256;
       config.adapterBaseSha256 = manifest.base.sha256;
     }
   }
-  config = await validateConfig(config);
+  // The timed recognizer's model downloads on first launch too. A configured folder that already holds a model
+  // (an older installer's, or a developer's own) is kept. Otherwise the pinned model goes to the models folder.
+  const timedPlanned = !replayTrace && !!config.timedAsr;
+  let timedManaged = false;
+  if (timedPlanned) {
+    const managed = resolve(config.cacheDirectory, timedSpeechModel.directory);
+    const configured = process.env.RAMBLE_TIMED_MODEL ?? config.timedAsr.model;
+    let own = false;
+    try { own = typeof configured === 'string' && configured !== managed && (await stat(join(configured, 'model.safetensors'))).isFile(); }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    if (!own) {
+      config.timedAsr.model = managed;
+      timedManaged = true;
+      delete process.env.RAMBLE_TIMED_MODEL;
+      // The small files are hashed on every launch. The 2.47 GB weights are hashed only if the recognizer fails.
+      await removeDamaged(managed, timedSpeechModel.files.filter(file => file.size < 10_000_000));
+      const missing = await missingFiles(managed, timedSpeechModel.files);
+      if (missing.length) downloads.push({ key: 'timed', directory: managed, files: missing });
+    }
+  }
   await mkdir(config.cacheDirectory, { recursive: true });
   const runtime = resolve(dirname(configPath), 'qvac-runtime.json');
   await writeFile(runtime, JSON.stringify({ cacheDirectory: config.cacheDirectory, loggerConsoleOutput: false, loggerLevel: 'error' }), { mode: 0o600 });
   process.env.QVAC_CONFIG_PATH = runtime;
   sdk = await import('@qvac/sdk');
-  const speechSrc = sdk.PARAKEET_TDT_0_6B_V3_Q4_0, refinerSrc = config.modelPath;
-  // The app draws first-run progress from these: each model's size up front (a local file has none), then byte counts.
-  emit({ type: 'models', models: [{ key: 'speech', bytes: speechSrc.expectedSize ?? null }, { key: 'cleanup', bytes: refinerSrc.expectedSize ?? null }] });
+  const speechSrc = sdk.PARAKEET_TDT_0_6B_V3_Q4_0;
+  const downloadSize = key => downloads.find(item => item.key === key)?.files.reduce((sum, file) => sum + file.size, 0) ?? null;
+  // The app draws first-run progress from these: each model's size up front (a file already here has none), then byte counts.
+  emit({ type: 'models', models: [
+    ...(timedPlanned ? [{ key: 'timed', name: 'Speech recognition', bytes: downloadSize('timed') }] : []),
+    { key: 'speech', name: timedPlanned ? 'Backup speech recognition' : 'Speech recognition', bytes: speechSrc.expectedSize ?? null },
+    { key: 'cleanup', name: 'Text cleanup', bytes: downloadSize('cleanup') },
+  ] });
+  for (const { key, directory, files } of downloads) {
+    emit({ type: 'loading', model: key, message: 'Downloading a model' });
+    let last = 0;
+    try {
+      await downloadFiles(directory, files, (downloaded, total) => {
+        // At most ten updates a second, but the last one always goes out.
+        if (downloaded < total && Date.now() - last < 100) return;
+        last = Date.now();
+        emit({ type: 'progress', model: key, downloaded, total });
+      });
+    } catch (error) {
+      throw new Error(`Could not download the ${key === 'cleanup' ? 'text cleanup' : 'speech recognition'} model. Check the internet connection, then quit and reopen RambleFlow. ${error.message}`);
+    }
+  }
+  config = await validateConfig(config);
+  const refinerSrc = config.modelPath;
   const progress = key => {
     let last = 0;
     return p => {
@@ -486,6 +543,7 @@ try {
     process.env.RAMBLE_TIMED_MODEL ?? config.timedAsr?.model,
   ];
   const timedConfigured = timedPaths.every(path => typeof path === 'string' && path.startsWith('/') && !path.includes('\0'));
+  if (timedPlanned) emit({ type: 'loading', model: 'timed', message: 'Loading speech recognition' });
   if (replayTrace ? process.env.QVAC_REPLAY_TIMED_ASR === '1' : timedConfigured) {
     if (!timedConfigured) throw new Error('Timed ASR paths missing');
     timedRecognizer = timedAsr(...timedPaths, (id, raw) => {
@@ -506,7 +564,15 @@ try {
       if (replayTrace) throw error;
     }
   }
+  if (timedPlanned && timedRecognizer) emit({ type: 'loaded', model: 'timed' });
   emit({ type: 'ready' });
+  if (timedPlanned && !timedRecognizer) {
+    // Dictation still works on the backup recognizer. A damaged download is removed so the next launch fetches it again.
+    const damaged = timedManaged ? await removeDamaged(config.timedAsr.model, timedSpeechModel.files).catch(() => []) : [];
+    emit({ type: 'warning', message: damaged.length
+      ? 'The speech recognition model was damaged and has been removed. Quit and reopen RambleFlow to download it again. Until then the backup recognizer is in use.'
+      : 'Fast speech recognition did not start, so the backup recognizer is in use. Quit and reopen RambleFlow to try again.' });
+  }
   const lines = createInterface({ input: process.stdin, crlfDelay: Infinity });
   // Do not block audio or cancellation behind a pending native stop/completion.
   lines.on('line', line => {

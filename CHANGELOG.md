@@ -1,5 +1,7 @@
 # Changelog
 
+The release installer no longer carries model weights, so it fits GitHub's 2 GiB limit for a release file. On first launch the app downloads the timed speech model from its pinned Hugging Face commit and the Literal192 cleanup model from the GitHub release, checks each file's size and SHA-256, and shows both on the setup progress card. Downloaded models live in the models folder, so an upgrade that replaces the runtime keeps them. `scripts/package-release.sh` builds the image and refuses one that contains weights or exceeds 2 GiB.
+
 Disable sidecar Python bytecode writes so vocabulary imports preserve the signed helper bundle.
 
 Recover the identical bundled cleanup model when a saved model path disappears during a runtime upgrade.

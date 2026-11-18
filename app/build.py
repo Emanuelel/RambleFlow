@@ -15,6 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model', required=True, type=pathlib.Path, help='Path to compatible GGUF refiner weights.')
 parser.add_argument('--bundle', action='store_true', help='Bundle the runtime and the supplied refiner weights.')
 parser.add_argument('--fast-runtime', action='store_true', help='Require the Brew-installed timed ASR runtime on first launch.')
+parser.add_argument('--refiner-url', help='HTTPS address the app downloads the --model weights from on first launch, instead of bundling them.')
 parser.add_argument('--adapter', type=pathlib.Path)
 parser.add_argument('--output', type=pathlib.Path, default=ROOT / '.local/app')
 parser.add_argument('--identity', help='Code-signing identity from the keychain. Remembered privately for later builds; "-" returns to ad-hoc.')
@@ -24,6 +25,10 @@ adapter = args.adapter.resolve() if args.adapter else None
 for weights in (model, adapter):
     if weights is not None and not weights.is_file():
         parser.error(f'Weights file not found: {weights}')
+if args.refiner_url and (not args.bundle or adapter or not args.refiner_url.startswith('https://')):
+    parser.error('--refiner-url needs --bundle, an https:// address and no separate adapter.')
+if args.refiner_url and args.refiner_url.rsplit('/', 1)[-1] != model.name:
+    parser.error(f'--refiner-url must end with the model file name, {model.name}.')
 output = args.output.resolve()
 if '.local' not in output.parts:
     parser.error('Keep local binaries and private settings in an ignored .local directory.')
@@ -95,7 +100,7 @@ if args.bundle:
     foreign = [line.strip() for line in linked if not line.strip().startswith(('/usr/lib/', '/System/'))]
     if foreign:
         parser.error('This Node links libraries a fresh Mac lacks: ' + '; '.join(foreign) + '. Use an official or nvm Node build.')
-    for name in ['worker.mjs', 'core.mjs', 'timed-asr.mjs']:
+    for name in ['worker.mjs', 'core.mjs', 'timed-asr.mjs', 'model-download.mjs']:
         shutil.copy2(ROOT / 'app' / name, runtime / 'app' / name)
     shutil.copy2(ROOT / 'scripts/refiner-common.mjs', runtime / 'scripts/refiner-common.mjs')
     models = runtime / 'models'
@@ -105,6 +110,10 @@ if args.bundle:
         if weights is None:
             continue
         filename = f'{role}.gguf'
+        if args.refiner_url:
+            # Too large to ship inside the installer: the worker downloads and checks it on first launch.
+            manifest[role] = {'file': weights.name, 'sha256': digest(weights), 'bytes': weights.stat().st_size, 'url': args.refiner_url}
+            continue
         bundled_weights = models / filename
         shutil.copy2(weights, bundled_weights)
         manifest[role] = {'file': filename, 'sha256': digest(bundled_weights)}
