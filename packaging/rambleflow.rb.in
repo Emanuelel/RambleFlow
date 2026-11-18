@@ -5,9 +5,13 @@ cask "rambleflow" do
   url "@URL@"
   name "RambleFlow"
   desc "Local voice typing for macOS"
-  homepage "https://github.com/Emanuelel/qvac-dictation"
+  homepage "https://github.com/Emanuelel/RambleFlow"
 
   depends_on arch: :arm64
   app "RambleFlow.app"
   artifact "timed-runtime", target: "#{Dir.home}/Library/Application Support/RambleFlow/timed-runtime"
+
+  caveats "On first launch RambleFlow downloads about 4.4 GB of speech and cleanup models. After that it works offline. Upgrading from a build that bundled its speech model downloads that model once."
+
+  zap trash: "~/Library/Application Support/RambleFlow"
 end

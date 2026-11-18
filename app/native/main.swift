@@ -106,13 +106,14 @@ if CommandLine.arguments.contains("--self-test") {
             try Data().write(to: file)
         }
         try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: python.path)
-        try FileManager.default.createDirectory(at: timed.appendingPathComponent("asr-model"), withIntermediateDirectories: true)
         let configured = try LaunchConfig.bundled(resources: resources, support: fast, fastRuntime: true)
         let configURL = URL(fileURLWithPath: configured.configPath)
         let initial = try Data(contentsOf: configURL)
         let settings = try JSONSerialization.jsonObject(with: initial) as? [String: Any]
         let sidecar = settings?["timedAsr"] as? [String: Any]
         precondition(sidecar?["python"] as? String == python.path)
+        // No speech model is needed to start: it downloads on first launch into the models folder.
+        precondition(sidecar?["model"] as? String == fast.appendingPathComponent("models/parakeet-tdt-0.6b-v2-mlx-8ae1553").path)
         precondition(sidecar?["formattingReuse"] as? Bool == true)
         let existing = Data("{}".utf8)
         try existing.write(to: configURL)

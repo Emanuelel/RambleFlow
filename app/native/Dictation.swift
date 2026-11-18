@@ -20,10 +20,11 @@ struct LaunchConfig {
                 let timed = support.appendingPathComponent("timed-runtime")
                 let python = timed.appendingPathComponent("python/bin/python").path
                 let server = timed.appendingPathComponent("Phonon.app/Contents/Resources/sidecar/asr_server.py").path
-                let model = timed.appendingPathComponent("asr-model").path
+                // The installer brings the recognizer; its speech model downloads on first launch, into the
+                // models folder so an upgrade that replaces the runtime keeps it. The worker uses the same folder name.
+                let model = support.appendingPathComponent("models/parakeet-tdt-0.6b-v2-mlx-8ae1553").path
                 guard FileManager.default.isExecutableFile(atPath: python),
-                      FileManager.default.isReadableFile(atPath: server),
-                      FileManager.default.fileExists(atPath: model) else {
+                      FileManager.default.isReadableFile(atPath: server) else {
                     throw CocoaError(.fileNoSuchFile, userInfo: [NSFilePathErrorKey: timed.path, NSLocalizedDescriptionKey: "The timed speech runtime is missing. Reinstall RambleFlow with Homebrew."])
                 }
                 first["timedAsr"] = ["python": python, "server": server, "model": model, "formattingReuse": true] as [String: Any]
@@ -850,6 +851,7 @@ final class DictationApp: NSObject, NSApplicationDelegate {
             return
         }
         if type == "closed" && CommandLine.arguments.contains("--ui-smoke") { print("UI_CLOSED: models unloaded cleanly."); NSApp.terminate(nil); return }
+        if type == "warning" { status.stringValue = message["message"] as? String ?? ""; pill?.notice("Using backup speech recognition", problem: true); return }
         if type == "fatal" { ready = false; failed = true; status.stringValue = message["message"] as? String ?? "Model loading failed."; pill?.rest(.notice("Models failed to load. Open the app")); return }
         if let pendingCancel, message["id"] as? String == pendingCancel {
             if type == "error" { self.pendingCancel = nil; restartWorker("The cancelled recording failed to shut down, so the models are restarting.") }
@@ -940,7 +942,7 @@ final class DictationApp: NSObject, NSApplicationDelegate {
         let key = message["model"] as? String ?? "", wasDownloading = models.downloading
         let number = { (name: String) in (message[name] as? NSNumber)?.int64Value }
         switch type {
-        case "models": models.plan((message["models"] as? [[String: Any]] ?? []).map { ($0["key"] as? String ?? "", ($0["bytes"] as? NSNumber)?.int64Value) })
+        case "models": models.plan((message["models"] as? [[String: Any]] ?? []).map { ($0["key"] as? String ?? "", ($0["bytes"] as? NSNumber)?.int64Value, $0["name"] as? String) })
         case "loading": models.started(key)
         case "progress": if let fetched = number("downloaded"), let total = number("total") { models.progress(key, fetched: fetched, total: total, at: ProcessInfo.processInfo.systemUptime) }
         default: models.loaded(key)
@@ -1271,9 +1273,16 @@ final class DictationApp: NSObject, NSApplicationDelegate {
         var disk = ModelSetup(); disk.plan([("speech", 859_541_333), ("cleanup", 1_056_782_912)]); disk.started("speech"); disk.progress("speech", fetched: 859_541_333, total: 859_541_333, at: 0)
         models.progress("speech", fetched: 398_734_976, total: 398_734_976, at: 4); models.loaded("speech"); models.started("cleanup")
         for (second, bytes) in [(5.0, 100_000_000), (6.0, 190_000_000), (7.0, 412_000_000)] as [(Double, Int64)] { models.progress("cleanup", fetched: bytes, total: 1_056_782_912, at: second) }
+        // The release build: the timed recognizer's model downloads too, so the card has a third line.
+        var release = ModelSetup()
+        release.plan([("timed", 2_471_863_880, "Speech recognition"), ("speech", 398_734_976, "Backup speech recognition"), ("cleanup", 1_056_782_912, "Text cleanup")])
+        release.started("cleanup")
+        for (second, bytes) in [(0.0, 300_000_000), (1.0, 700_000_000), (2.0, 1_056_782_912)] as [(Double, Int64)] { release.progress("cleanup", fetched: bytes, total: 1_056_782_912, at: second) }
+        release.started("timed")
+        for (second, bytes) in [(3.0, 200_000_000), (4.0, 600_000_000), (5.0, 1_000_000_000)] as [(Double, Int64)] { release.progress("timed", fetched: bytes, total: 2_471_863_880, at: second) }
         for (name, appearance) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
             panel.appearance = NSAppearance(named: appearance)
-            for (step, state, label) in [(0, early, "1-downloading"), (OnboardingView.practiceStep, models, "3-downloading"), (OnboardingView.practiceStep, disk, "3-loading")] {
+            for (step, state, label) in [(0, early, "1-downloading"), (OnboardingView.practiceStep, models, "3-downloading"), (OnboardingView.practiceStep, disk, "3-loading"), (OnboardingView.practiceStep, release, "3-release")] {
                 onboarding?.update(microphone: step > 0, microphoneAsked: step > 0, accessibility: step > 1, modelsReady: false)
                 onboarding?.showModels(state); onboarding?.show(step, animated: false); onboarding?.freezeProgress(at: 0.55)
                 let view = panel.contentView!

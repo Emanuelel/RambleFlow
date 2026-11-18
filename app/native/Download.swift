@@ -20,9 +20,13 @@ struct ModelSetup {
     private var sample: (time: TimeInterval, bytes: Int64)?, samples = 0
     static let names = ["speech": "Speech recognition", "cleanup": "Text cleanup"]
 
-    mutating func plan(_ models: [(key: String, size: Int64?)]) {
-        parts = models.map { Part(key: $0.key, name: Self.names[$0.key] ?? $0.key, size: $0.size) }
+    // The worker may name each model; older workers send only the key.
+    mutating func plan(_ models: [(key: String, size: Int64?, name: String?)]) {
+        parts = models.map { Part(key: $0.key, name: $0.name ?? Self.names[$0.key] ?? $0.key, size: $0.size) }
         speed = nil; sample = nil; samples = 0
+    }
+    mutating func plan(_ models: [(key: String, size: Int64?)]) {
+        plan(models.map { ($0.key, $0.size, nil) })
     }
     mutating func started(_ key: String) { edit(key) { if $0.phase == .waiting { $0.phase = .loading } }; sample = nil }
     mutating func progress(_ key: String, fetched: Int64, total: Int64, at time: TimeInterval) {
@@ -171,7 +175,8 @@ final class DownloadView: NSView {
         drawBar(NSRect(x: inset, y: 62, width: width, height: 8), time: time)
         // One line per model under the bar: a symbol for its state, its name, and its own count on the right.
         for (index, part) in setup.parts.enumerated() {
-            let y = 84 + CGFloat(index) * 21
+            // Three lines sit a little closer so the card keeps its height and the screen its layout.
+            let y = setup.parts.count > 2 ? 78 + CGFloat(index) * 16.5 : 84 + CGFloat(index) * 21
             let (symbol, color): (String, NSColor) = {
                 switch part.phase {
                 case .ready: return ("checkmark.circle.fill", Theme.good)
